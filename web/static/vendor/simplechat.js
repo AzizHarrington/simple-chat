@@ -10220,6 +10220,39 @@ Elm.Html.Attributes.make = function (_elm) {
                                         ,property: property
                                         ,attribute: attribute};
 };
+Elm.StartApp = Elm.StartApp || {};
+Elm.StartApp.Simple = Elm.StartApp.Simple || {};
+Elm.StartApp.Simple.make = function (_elm) {
+   "use strict";
+   _elm.StartApp = _elm.StartApp || {};
+   _elm.StartApp.Simple = _elm.StartApp.Simple || {};
+   if (_elm.StartApp.Simple.values) return _elm.StartApp.Simple.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var start = function (config) {
+      var update = F2(function (maybeAction,model) {
+         var _p0 = maybeAction;
+         if (_p0.ctor === "Just") {
+               return A2(config.update,_p0._0,model);
+            } else {
+               return _U.crashCase("StartApp.Simple",{start: {line: 91,column: 7},end: {line: 96,column: 52}},_p0)("This should never happen.");
+            }
+      });
+      var actions = $Signal.mailbox($Maybe.Nothing);
+      var address = A2($Signal.forwardTo,actions.address,$Maybe.Just);
+      var model = A3($Signal.foldp,update,config.model,actions.signal);
+      return A2($Signal.map,config.view(address),model);
+   };
+   var Config = F3(function (a,b,c) {    return {model: a,view: b,update: c};});
+   return _elm.StartApp.Simple.values = {_op: _op,Config: Config,start: start};
+};
 Elm.SimpleChat = Elm.SimpleChat || {};
 Elm.SimpleChat.make = function (_elm) {
    "use strict";
@@ -10233,47 +10266,18 @@ Elm.SimpleChat.make = function (_elm) {
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm);
+   $Signal = Elm.Signal.make(_elm),
+   $StartApp$Simple = Elm.StartApp.Simple.make(_elm);
    var _op = {};
    var row = F2(function (styles,contents) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("row"),$Html$Attributes.style(styles)]),
-      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("col-sm-6")]),contents)]));
+      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("col-md-12")]),contents)]));
    });
    var chatInput = _U.list([A2($Html.input,_U.list([$Html$Attributes.type$("text"),$Html$Attributes.placeholder("Enter a message...")]),_U.list([]))
                            ,A2($Html.button,
                            _U.list([$Html$Attributes.$class("btn btn-default"),$Html$Attributes.type$("button")]),
                            _U.list([$Html.text("Submit")]))]);
-   var messages = _U.list([{time: "11:34",name: "bob",text: "hello"}
-                          ,{time: "11:50",name: "charles",text: "hey"}
-                          ,{time: "12:11",name: "bob",text: "how are you?"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}
-                          ,{time: "12:15",name: "sally",text: "hello"}]);
    var formatMessage = function (m) {
       return A2($Html.div,
       _U.list([$Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "padding",_1: "5px"}]))]),
@@ -10283,30 +10287,66 @@ Elm.SimpleChat.make = function (_elm) {
               ,$Html.text("=> ")
               ,$Html.text(m.text)]));
    };
-   var Message = F3(function (a,b,c) {    return {name: a,text: b,time: c};});
    var messageBoxStyle = _U.list([{ctor: "_Tuple2",_0: "overflow-y",_1: "hidden"}
                                  ,{ctor: "_Tuple2",_0: "overflow",_1: "scroll"}
                                  ,{ctor: "_Tuple2",_0: "height",_1: "500px"}
                                  ,{ctor: "_Tuple2",_0: "border",_1: "1px solid grey"}
                                  ,{ctor: "_Tuple2",_0: "background",_1: "#F8F8F8"}]);
-   var messageBox = _U.list([A2($Html.div,
-   _U.list([$Html$Attributes.id("messages"),$Html$Attributes.style(messageBoxStyle)]),
-   A2($List.map,formatMessage,messages))]);
    var headLine = _U.list([A2($Html.div,_U.list([]),_U.list([A2($Html.h1,_U.list([]),_U.list([$Html.text("Simple Chat")]))]))
                           ,A2($Html.p,_U.list([]),_U.list([$Html.text("written in elm and phoenix")]))
                           ,A2($Html.br,_U.list([]),_U.list([]))
                           ,A2($Html.br,_U.list([]),_U.list([]))]);
-   var main = A2($Html.div,
-   _U.list([$Html$Attributes.$class("container")]),
-   _U.list([A2(row,_U.list([]),headLine),A2(row,_U.list([]),messageBox),A2(row,_U.list([]),chatInput)]));
+   var update = F2(function (action,model) {    var _p0 = action;return A2($Basics._op["++"],model,_U.list([_p0._0]));});
+   var Input = function (a) {    return {ctor: "Input",_0: a};};
+   var model = _U.list([{time: "11:34",name: "bob",text: "hello"}
+                       ,{time: "11:50",name: "charles",text: "hey"}
+                       ,{time: "12:11",name: "bob",text: "how are you?"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}
+                       ,{time: "12:15",name: "sally",text: "hello"}]);
+   var messageBox = _U.list([A2($Html.div,_U.list([$Html$Attributes.style(messageBoxStyle)]),A2($List.map,formatMessage,model))]);
+   var view = F2(function (address,model) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("container")]),
+      _U.list([A2(row,_U.list([]),headLine),A2(row,_U.list([]),messageBox),A2(row,_U.list([]),chatInput)]));
+   });
+   var Message = F3(function (a,b,c) {    return {name: a,text: b,time: c};});
+   var main = $StartApp$Simple.start({model: model,update: update,view: view});
    return _elm.SimpleChat.values = {_op: _op
                                    ,main: main
+                                   ,Message: Message
+                                   ,model: model
+                                   ,Input: Input
+                                   ,update: update
+                                   ,view: view
                                    ,headLine: headLine
                                    ,messageBox: messageBox
                                    ,messageBoxStyle: messageBoxStyle
-                                   ,Message: Message
                                    ,formatMessage: formatMessage
-                                   ,messages: messages
                                    ,chatInput: chatInput
                                    ,row: row};
 };
