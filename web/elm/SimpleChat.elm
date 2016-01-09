@@ -1,9 +1,14 @@
 module SimpleChat where
 
+import Debug
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Json.Decode as Json
+import Signal exposing (..)
 import StartApp.Simple as StartApp
+import String
+import Time
 
 
 main =
@@ -16,65 +21,65 @@ main =
 
 -- Model
 
-type alias Message = { name : String, text : String, time : String }
-type alias Model = List Message
+type alias Model =
+  { messages : List Chatmessage
+  , text : String
+  }
+
+
+type alias Chatmessage =
+  { name : String
+  , text : String
+  , time : String }
 
 
 model : Model
-model =
-  [ { time = "11:34", name = "bob", text = "hello" }
-  , { time = "11:50", name = "charles", text = "hey"}
-  , { time = "12:11", name = "bob", text = "how are you?"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  , { time = "12:15", name = "sally", text = "hello"}
-  ]
+model = { messages = [ ], text = "" }
 
 
 -- Update
 
-type Action = Input Message
+type Action = Input String | Add
 
 
 update action model =
-  case action of
-    Input message ->
-      model ++ [message]
+  let
+    model = Debug.log "model" model
+  in
+    case action of
+      Input text ->
+        { model | text = text }
+      Add ->
+        { model
+          | text = ""
+          , messages =
+            if
+              String.isEmpty model.text
+            then
+              model.messages
+            else
+              model.messages ++ [ newMessage model.text ]
+        }
+
+
+newMessage : String -> Chatmessage
+newMessage text =
+  { time = "12:00"
+  , name = "Aziz"
+  , text = text
+  }
 
 
 -- View
 
+view : Address Action -> Model -> Html
 view address model =
   div
-    [ class "container" ]
-    [ row [ ] headLine
-    , row [ ] messageBox
-    , row [ ] chatInput
-    ]
+  [ class "container" ]
+  [ row [ ] headLine
+  , row [ ] (messageBox model)
+  , row [ ] (chatInput address model.text)
+  ]
 
 
 headLine : List Html
@@ -86,11 +91,11 @@ headLine =
   ]
 
 
-messageBox : List Html
-messageBox =
+messageBox : Model -> List Html
+messageBox model =
   [ div
-      [ style messageBoxStyle ]
-      (List.map formatMessage model)
+    [ style messageBoxStyle ]
+    (List.map formatMessage model.messages)
   ]
 
 
@@ -103,35 +108,57 @@ messageBoxStyle =
   , ("background", "#F8F8F8")
   ]
 
-formatMessage : Message -> Html
+formatMessage : Chatmessage -> Html
 formatMessage m =
   div
-    [ style [ ("padding", "5px")]]
-    [ text ("[" ++ m.time ++ "]")
-    , text " "
-    , text ("[" ++ m.name ++ "]")
-    , text "=> "
-    , text m.text
-    ]
+  [ style [ ("padding", "5px")]]
+  [ text ("[" ++ m.time ++ "]")
+  , text " "
+  , text ("[" ++ m.name ++ "]")
+  , text "=> "
+  , text m.text
+  ]
 
-chatInput : List Html
-chatInput =
-  [ input
-      [ type' "text"
-      , placeholder "Enter a message..."
+chatInput : Address Action -> String -> List Html
+chatInput address text =
+  [ div
+    [ attribute "role" "form" ]
+    [ div
+      [ class "form-group" ]
+      [ input
+        [ type' "text"
+        , class "form-control"
+        , value text
+        , placeholder "Enter a message..."
+        , on "input" targetValue (\string -> Signal.message address (Input string))
+        , onEnter address Add
+        ]
+        [ ]
       ]
-      [ ]
-  , button
+    , button
       [ class "btn btn-default"
       , type' "button"
-      , finishme
+      , onClick address Add
       ]
-      [ text "Submit" ]
+      [ Html.text "Submit" ]
+    ]
   ]
+
+
+onEnter : Address a -> a -> Attribute
+onEnter address value =
+    on "keydown"
+      (Json.customDecoder keyCode is13)
+      (\_ -> Signal.message address value)
+
+
+is13 : Int -> Result String ()
+is13 code =
+  if code == 13 then Ok () else Err "not the right key code"
 
 
 row : List ( String, String ) -> List Html -> Html
 row styles contents =
   div
-    [ class "row", style styles ]
-    [ div [ class "col-md-12" ] contents ]
+  [ class "row", style styles ]
+  [ div [ class "col-md-12" ] contents ]

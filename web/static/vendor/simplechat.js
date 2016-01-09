@@ -3742,6 +3742,116 @@ Elm.Native.Signal.make = function(localRuntime) {
 	};
 };
 
+Elm.Native.Time = {};
+
+Elm.Native.Time.make = function(localRuntime)
+{
+	localRuntime.Native = localRuntime.Native || {};
+	localRuntime.Native.Time = localRuntime.Native.Time || {};
+	if (localRuntime.Native.Time.values)
+	{
+		return localRuntime.Native.Time.values;
+	}
+
+	var NS = Elm.Native.Signal.make(localRuntime);
+	var Maybe = Elm.Maybe.make(localRuntime);
+
+
+	// FRAMES PER SECOND
+
+	function fpsWhen(desiredFPS, isOn)
+	{
+		var msPerFrame = 1000 / desiredFPS;
+		var ticker = NS.input('fps-' + desiredFPS, null);
+
+		function notifyTicker()
+		{
+			localRuntime.notify(ticker.id, null);
+		}
+
+		function firstArg(x, y)
+		{
+			return x;
+		}
+
+		// input fires either when isOn changes, or when ticker fires.
+		// Its value is a tuple with the current timestamp, and the state of isOn
+		var input = NS.timestamp(A3(NS.map2, F2(firstArg), NS.dropRepeats(isOn), ticker));
+
+		var initialState = {
+			isOn: false,
+			time: localRuntime.timer.programStart,
+			delta: 0
+		};
+
+		var timeoutId;
+
+		function update(input, state)
+		{
+			var currentTime = input._0;
+			var isOn = input._1;
+			var wasOn = state.isOn;
+			var previousTime = state.time;
+
+			if (isOn)
+			{
+				timeoutId = localRuntime.setTimeout(notifyTicker, msPerFrame);
+			}
+			else if (wasOn)
+			{
+				clearTimeout(timeoutId);
+			}
+
+			return {
+				isOn: isOn,
+				time: currentTime,
+				delta: (isOn && !wasOn) ? 0 : currentTime - previousTime
+			};
+		}
+
+		return A2(
+			NS.map,
+			function(state) { return state.delta; },
+			A3(NS.foldp, F2(update), update(input.value, initialState), input)
+		);
+	}
+
+
+	// EVERY
+
+	function every(t)
+	{
+		var ticker = NS.input('every-' + t, null);
+		function tellTime()
+		{
+			localRuntime.notify(ticker.id, null);
+		}
+		var clock = A2(NS.map, fst, NS.timestamp(ticker));
+		setInterval(tellTime, t);
+		return clock;
+	}
+
+
+	function fst(pair)
+	{
+		return pair._0;
+	}
+
+
+	function read(s)
+	{
+		var t = Date.parse(s);
+		return isNaN(t) ? Maybe.Nothing : Maybe.Just(t);
+	}
+
+	return localRuntime.Native.Time.values = {
+		fpsWhen: F2(fpsWhen),
+		every: every,
+		toDate: function(t) { return new Date(t); },
+		read: read
+	};
+};
+
 Elm.Native.Transform2D = {};
 Elm.Native.Transform2D.make = function(localRuntime) {
 	localRuntime.Native = localRuntime.Native || {};
@@ -6516,6 +6626,52 @@ Elm.Signal.make = function (_elm) {
                                ,message: message
                                ,forwardTo: forwardTo
                                ,Mailbox: Mailbox};
+};
+Elm.Time = Elm.Time || {};
+Elm.Time.make = function (_elm) {
+   "use strict";
+   _elm.Time = _elm.Time || {};
+   if (_elm.Time.values) return _elm.Time.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Native$Signal = Elm.Native.Signal.make(_elm),
+   $Native$Time = Elm.Native.Time.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var delay = $Native$Signal.delay;
+   var since = F2(function (time,signal) {
+      var stop = A2($Signal.map,$Basics.always(-1),A2(delay,time,signal));
+      var start = A2($Signal.map,$Basics.always(1),signal);
+      var delaydiff = A3($Signal.foldp,F2(function (x,y) {    return x + y;}),0,A2($Signal.merge,start,stop));
+      return A2($Signal.map,F2(function (x,y) {    return !_U.eq(x,y);})(0),delaydiff);
+   });
+   var timestamp = $Native$Signal.timestamp;
+   var every = $Native$Time.every;
+   var fpsWhen = $Native$Time.fpsWhen;
+   var fps = function (targetFrames) {    return A2(fpsWhen,targetFrames,$Signal.constant(true));};
+   var inMilliseconds = function (t) {    return t;};
+   var millisecond = 1;
+   var second = 1000 * millisecond;
+   var minute = 60 * second;
+   var hour = 60 * minute;
+   var inHours = function (t) {    return t / hour;};
+   var inMinutes = function (t) {    return t / minute;};
+   var inSeconds = function (t) {    return t / second;};
+   return _elm.Time.values = {_op: _op
+                             ,millisecond: millisecond
+                             ,second: second
+                             ,minute: minute
+                             ,hour: hour
+                             ,inMilliseconds: inMilliseconds
+                             ,inSeconds: inSeconds
+                             ,inMinutes: inMinutes
+                             ,inHours: inHours
+                             ,fps: fps
+                             ,fpsWhen: fpsWhen
+                             ,every: every
+                             ,timestamp: timestamp
+                             ,delay: delay
+                             ,since: since};
 };
 Elm.Native.String = {};
 
@@ -10220,6 +10376,72 @@ Elm.Html.Attributes.make = function (_elm) {
                                         ,property: property
                                         ,attribute: attribute};
 };
+Elm.Html = Elm.Html || {};
+Elm.Html.Events = Elm.Html.Events || {};
+Elm.Html.Events.make = function (_elm) {
+   "use strict";
+   _elm.Html = _elm.Html || {};
+   _elm.Html.Events = _elm.Html.Events || {};
+   if (_elm.Html.Events.values) return _elm.Html.Events.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $VirtualDom = Elm.VirtualDom.make(_elm);
+   var _op = {};
+   var keyCode = A2($Json$Decode._op[":="],"keyCode",$Json$Decode.$int);
+   var targetChecked = A2($Json$Decode.at,_U.list(["target","checked"]),$Json$Decode.bool);
+   var targetValue = A2($Json$Decode.at,_U.list(["target","value"]),$Json$Decode.string);
+   var defaultOptions = $VirtualDom.defaultOptions;
+   var Options = F2(function (a,b) {    return {stopPropagation: a,preventDefault: b};});
+   var onWithOptions = $VirtualDom.onWithOptions;
+   var on = $VirtualDom.on;
+   var messageOn = F3(function (name,addr,msg) {    return A3(on,name,$Json$Decode.value,function (_p0) {    return A2($Signal.message,addr,msg);});});
+   var onClick = messageOn("click");
+   var onDoubleClick = messageOn("dblclick");
+   var onMouseMove = messageOn("mousemove");
+   var onMouseDown = messageOn("mousedown");
+   var onMouseUp = messageOn("mouseup");
+   var onMouseEnter = messageOn("mouseenter");
+   var onMouseLeave = messageOn("mouseleave");
+   var onMouseOver = messageOn("mouseover");
+   var onMouseOut = messageOn("mouseout");
+   var onBlur = messageOn("blur");
+   var onFocus = messageOn("focus");
+   var onSubmit = messageOn("submit");
+   var onKey = F3(function (name,addr,handler) {    return A3(on,name,keyCode,function (code) {    return A2($Signal.message,addr,handler(code));});});
+   var onKeyUp = onKey("keyup");
+   var onKeyDown = onKey("keydown");
+   var onKeyPress = onKey("keypress");
+   return _elm.Html.Events.values = {_op: _op
+                                    ,onBlur: onBlur
+                                    ,onFocus: onFocus
+                                    ,onSubmit: onSubmit
+                                    ,onKeyUp: onKeyUp
+                                    ,onKeyDown: onKeyDown
+                                    ,onKeyPress: onKeyPress
+                                    ,onClick: onClick
+                                    ,onDoubleClick: onDoubleClick
+                                    ,onMouseMove: onMouseMove
+                                    ,onMouseDown: onMouseDown
+                                    ,onMouseUp: onMouseUp
+                                    ,onMouseEnter: onMouseEnter
+                                    ,onMouseLeave: onMouseLeave
+                                    ,onMouseOver: onMouseOver
+                                    ,onMouseOut: onMouseOut
+                                    ,on: on
+                                    ,onWithOptions: onWithOptions
+                                    ,defaultOptions: defaultOptions
+                                    ,targetValue: targetValue
+                                    ,targetChecked: targetChecked
+                                    ,keyCode: keyCode
+                                    ,Options: Options};
+};
 Elm.StartApp = Elm.StartApp || {};
 Elm.StartApp.Simple = Elm.StartApp.Simple || {};
 Elm.StartApp.Simple.make = function (_elm) {
@@ -10263,21 +10485,29 @@ Elm.SimpleChat.make = function (_elm) {
    $Debug = Elm.Debug.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
-   $StartApp$Simple = Elm.StartApp.Simple.make(_elm);
+   $StartApp$Simple = Elm.StartApp.Simple.make(_elm),
+   $String = Elm.String.make(_elm);
    var _op = {};
    var row = F2(function (styles,contents) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("row"),$Html$Attributes.style(styles)]),
       _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("col-md-12")]),contents)]));
    });
-   var chatInput = _U.list([A2($Html.input,_U.list([$Html$Attributes.type$("text"),$Html$Attributes.placeholder("Enter a message...")]),_U.list([]))
-                           ,A2($Html.button,
-                           _U.list([$Html$Attributes.$class("btn btn-default"),$Html$Attributes.type$("button")]),
-                           _U.list([$Html.text("Submit")]))]);
+   var is13 = function (code) {    return _U.eq(code,13) ? $Result.Ok({ctor: "_Tuple0"}) : $Result.Err("not the right key code");};
+   var onEnter = F2(function (address,value) {
+      return A3($Html$Events.on,
+      "keydown",
+      A2($Json$Decode.customDecoder,$Html$Events.keyCode,is13),
+      function (_p0) {
+         return A2($Signal.message,address,value);
+      });
+   });
    var formatMessage = function (m) {
       return A2($Html.div,
       _U.list([$Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "padding",_1: "5px"}]))]),
@@ -10292,61 +10522,68 @@ Elm.SimpleChat.make = function (_elm) {
                                  ,{ctor: "_Tuple2",_0: "height",_1: "500px"}
                                  ,{ctor: "_Tuple2",_0: "border",_1: "1px solid grey"}
                                  ,{ctor: "_Tuple2",_0: "background",_1: "#F8F8F8"}]);
+   var messageBox = function (model) {
+      return _U.list([A2($Html.div,_U.list([$Html$Attributes.style(messageBoxStyle)]),A2($List.map,formatMessage,model.messages))]);
+   };
    var headLine = _U.list([A2($Html.div,_U.list([]),_U.list([A2($Html.h1,_U.list([]),_U.list([$Html.text("Simple Chat")]))]))
                           ,A2($Html.p,_U.list([]),_U.list([$Html.text("written in elm and phoenix")]))
                           ,A2($Html.br,_U.list([]),_U.list([]))
                           ,A2($Html.br,_U.list([]),_U.list([]))]);
-   var update = F2(function (action,model) {    var _p0 = action;return A2($Basics._op["++"],model,_U.list([_p0._0]));});
+   var newMessage = function (text) {    return {time: "12:00",name: "Aziz",text: text};};
+   var update = F2(function (action,model) {
+      var model = A2($Debug.log,"model",model);
+      var _p1 = action;
+      if (_p1.ctor === "Input") {
+            return _U.update(model,{text: _p1._0});
+         } else {
+            return _U.update(model,
+            {text: "",messages: $String.isEmpty(model.text) ? model.messages : A2($Basics._op["++"],model.messages,_U.list([newMessage(model.text)]))});
+         }
+   });
+   var Add = {ctor: "Add"};
    var Input = function (a) {    return {ctor: "Input",_0: a};};
-   var model = _U.list([{time: "11:34",name: "bob",text: "hello"}
-                       ,{time: "11:50",name: "charles",text: "hey"}
-                       ,{time: "12:11",name: "bob",text: "how are you?"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}
-                       ,{time: "12:15",name: "sally",text: "hello"}]);
-   var messageBox = _U.list([A2($Html.div,_U.list([$Html$Attributes.style(messageBoxStyle)]),A2($List.map,formatMessage,model))]);
+   var chatInput = F2(function (address,text) {
+      return _U.list([A2($Html.div,
+      _U.list([A2($Html$Attributes.attribute,"role","form")]),
+      _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("form-group")]),
+              _U.list([A2($Html.input,
+              _U.list([$Html$Attributes.type$("text")
+                      ,$Html$Attributes.$class("form-control")
+                      ,$Html$Attributes.value(text)
+                      ,$Html$Attributes.placeholder("Enter a message...")
+                      ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (string) {    return A2($Signal.message,address,Input(string));})
+                      ,A2(onEnter,address,Add)]),
+              _U.list([]))]))
+              ,A2($Html.button,
+              _U.list([$Html$Attributes.$class("btn btn-default"),$Html$Attributes.type$("button"),A2($Html$Events.onClick,address,Add)]),
+              _U.list([$Html.text("Submit")]))]))]);
+   });
    var view = F2(function (address,model) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("container")]),
-      _U.list([A2(row,_U.list([]),headLine),A2(row,_U.list([]),messageBox),A2(row,_U.list([]),chatInput)]));
+      _U.list([A2(row,_U.list([]),headLine),A2(row,_U.list([]),messageBox(model)),A2(row,_U.list([]),A2(chatInput,address,model.text))]));
    });
-   var Message = F3(function (a,b,c) {    return {name: a,text: b,time: c};});
+   var model = {messages: _U.list([]),text: ""};
+   var Chatmessage = F3(function (a,b,c) {    return {name: a,text: b,time: c};});
+   var Model = F2(function (a,b) {    return {messages: a,text: b};});
    var main = $StartApp$Simple.start({model: model,update: update,view: view});
    return _elm.SimpleChat.values = {_op: _op
                                    ,main: main
-                                   ,Message: Message
+                                   ,Model: Model
+                                   ,Chatmessage: Chatmessage
                                    ,model: model
                                    ,Input: Input
+                                   ,Add: Add
                                    ,update: update
+                                   ,newMessage: newMessage
                                    ,view: view
                                    ,headLine: headLine
                                    ,messageBox: messageBox
                                    ,messageBoxStyle: messageBoxStyle
                                    ,formatMessage: formatMessage
                                    ,chatInput: chatInput
+                                   ,onEnter: onEnter
+                                   ,is13: is13
                                    ,row: row};
 };
