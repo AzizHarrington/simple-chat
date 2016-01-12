@@ -18,7 +18,20 @@ import "deps/phoenix_html/web/static/js/phoenix_html"
 // Local files can be imported directly using relative
 // paths "./socket" or full ones "web/static/js/socket".
 
-// import socket from "./socket"
+import socket from "./socket"
 
-var elmDiv = document.getElementById('elm-main')
-  , elmApp = Elm.embed(Elm.SimpleChat, elmDiv)
+var elmDiv = document.getElementById("elm-main")
+  , initialState = {messageList: []}
+  , elmApp = Elm.embed(Elm.Main, elmDiv, initialState)
+
+// Now that you are connected, you can join channels with a topic:
+let channel = socket.channel("messages:general", {})
+
+channel.join()
+  .receive("ok", resp => { console.log("Joined successfully", resp) })
+  .receive("error", resp => { console.log("Unable to join", resp) })
+
+channel.on('set_messages', data => {
+  console.log('got messages', data.messages)
+  elmApp.ports.messageList.send(data.messages)
+})

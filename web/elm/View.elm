@@ -1,76 +1,13 @@
-module SimpleChat where
+module View where
 
-import Debug
+import Types exposing (..)
+
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json
 import Signal exposing (..)
-import StartApp.Simple as StartApp
-import String
-import Time
 
-
-main =
-  StartApp.start
-    { model = model
-    , update = update
-    , view = view
-    }
-
-
--- Model
-
-type alias Model =
-  { messages : List Chatmessage
-  , text : String
-  }
-
-
-type alias Chatmessage =
-  { name : String
-  , text : String
-  , time : String }
-
-
-model : Model
-model = { messages = [ ], text = "" }
-
-
--- Update
-
-type Action = Input String | Add
-
-
-update action model =
-  let
-    model = Debug.log "model" model
-  in
-    case action of
-      Input text ->
-        { model | text = text }
-      Add ->
-        { model
-          | text = ""
-          , messages =
-            if
-              String.isEmpty model.text
-            then
-              model.messages
-            else
-              model.messages ++ [ newMessage model.text ]
-        }
-
-
-newMessage : String -> Chatmessage
-newMessage text =
-  { time = "12:00"
-  , name = "Aziz"
-  , text = text
-  }
-
-
--- View
 
 view : Address Action -> Model -> Html
 view address model =
@@ -154,7 +91,7 @@ onEnter address value =
 
 is13 : Int -> Result String ()
 is13 code =
-  if code == 13 then Ok () else Err "not the right key code"
+  if code == 13 then Ok () else Err "not the enter key"
 
 
 row : List ( String, String ) -> List Html -> Html

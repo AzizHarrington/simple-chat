@@ -43,7 +43,7 @@ exports.config = {
       "deps/phoenix_html/web/static",
       "web/static",
       "test/static",
-      "web/elm/SimpleChat.elm"
+      "web/elm/*.elm"
     ],
 
     // Where to compile files to
@@ -54,7 +54,7 @@ exports.config = {
   plugins: {
     elmBrunch: {
       elmFolder: 'web/elm',
-      mainModules: ['SimpleChat.elm'],
+      mainModules: ['Main.elm'],
       outputFolder: '../static/vendor'
     },
     babel: {
