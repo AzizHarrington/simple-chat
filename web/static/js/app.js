@@ -36,6 +36,6 @@ channel.on('set_messages', data => {
   elmApp.ports.messageList.send(data.messages)
 })
 
-elmApp.ports.newMessage.subscribe(event => {
+elmApp.ports.chatOutput.subscribe(event => {
   console.log(event)
 })

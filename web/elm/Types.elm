@@ -20,6 +20,8 @@ type alias Chatmessage =
 
 type Action =
   InitializeMessages (List Chatmessage)
-  | AddMessage
+  -- | AddMessage
+  | SubmitMessage
   | SetName String
   | SetText String
+  | NoOp

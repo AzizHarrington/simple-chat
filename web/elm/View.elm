@@ -68,8 +68,8 @@ chatInput address model =
         , class "form-control"
         , value model.name
         , placeholder "Username"
-        , on "input" targetValue (\string -> Signal.message address (SetName string))
-        , onEnter address AddMessage
+        , onInput address SetName
+        , onEnter address SubmitMessage
         ]
         [ ]
       , input
@@ -77,19 +77,24 @@ chatInput address model =
           , class "form-control"
           , value model.text
           , placeholder "Enter a message..."
-          , on "input" targetValue (\string -> Signal.message address (SetText string))
-          , onEnter address AddMessage
+          , onInput address SetText
+          , onEnter address SubmitMessage
           ]
           [ ]
       ]
     , button
       [ class "btn btn-default"
       , type' "button"
-      , onClick mailBox.address (Message.new model)
+      , onClick address SubmitMessage
       ]
       [ Html.text "Submit" ]
     ]
   ]
+
+
+onInput : Address a -> (String -> a) -> Attribute
+onInput address value =
+  on "input" targetValue (\string -> Signal.message address (value string))
 
 
 onEnter : Address a -> a -> Attribute

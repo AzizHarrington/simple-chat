@@ -34,5 +34,6 @@ incomingActions =
   Signal.map InitializeMessages messageList
 
 
-port newMessage : Signal Chatmessage
-port newMessage = mailBox.signal
+port chatOutput : Signal Chatmessage
+port chatOutput =
+  mailBox.signal
