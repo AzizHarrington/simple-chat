@@ -35,3 +35,7 @@ channel.on('set_messages', data => {
   console.log('got messages', data.messages)
   elmApp.ports.messageList.send(data.messages)
 })
+
+elmApp.ports.newMessage.subscribe(event => {
+  console.log(event)
+})

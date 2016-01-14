@@ -1,12 +1,13 @@
 module View where
 
-import Types exposing (..)
-
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json
 import Signal exposing (..)
+
+import Message exposing (mailBox)
+import Types exposing (..)
 
 
 view : Address Action -> Model -> Html
@@ -15,14 +16,14 @@ view address model =
   [ class "container" ]
   [ row [ ] headLine
   , row [ ] (messageBox model)
-  , row [ ] (chatInput address model.text)
+  , row [ ] (chatInput address model)
   ]
 
 
 headLine : List Html
 headLine =
   [ div [ ] [ h1 [ ] [ text "Simple Chat" ] ]
-  , p [ ] [ text "written in elm and phoenix" ]
+  , p [ ] [ text "written in elm & elixir" ]
   , br [ ] [ ]
   , br [ ] [ ]
   ]
@@ -56,8 +57,8 @@ formatMessage m =
   , text m.text
   ]
 
-chatInput : Address Action -> String -> List Html
-chatInput address text =
+chatInput : Address Action -> Model -> List Html
+chatInput address model =
   [ div
     [ attribute "role" "form" ]
     [ div
@@ -65,17 +66,26 @@ chatInput address text =
       [ input
         [ type' "text"
         , class "form-control"
-        , value text
-        , placeholder "Enter a message..."
-        , on "input" targetValue (\string -> Signal.message address (Input string))
-        , onEnter address Add
+        , value model.name
+        , placeholder "Username"
+        , on "input" targetValue (\string -> Signal.message address (SetName string))
+        , onEnter address AddMessage
         ]
         [ ]
+      , input
+          [ type' "text"
+          , class "form-control"
+          , value model.text
+          , placeholder "Enter a message..."
+          , on "input" targetValue (\string -> Signal.message address (SetText string))
+          , onEnter address AddMessage
+          ]
+          [ ]
       ]
     , button
       [ class "btn btn-default"
       , type' "button"
-      , onClick address Add
+      , onClick mailBox.address (Message.new model)
       ]
       [ Html.text "Submit" ]
     ]

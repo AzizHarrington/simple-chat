@@ -4,6 +4,7 @@ module Types where
 type alias Model =
   { messages : Messagelist
   , text : String
+  , name : String
   }
 
 
@@ -18,6 +19,7 @@ type alias Chatmessage =
 
 
 type Action =
-  Input String
-  | Add
-  | SetMessages (List Chatmessage)
+  InitializeMessages (List Chatmessage)
+  | AddMessage
+  | SetName String
+  | SetText String

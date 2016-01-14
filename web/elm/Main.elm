@@ -3,6 +3,7 @@ module Main where
 import Html exposing (Html)
 import StartApp
 
+import Message exposing (mailBox)
 import Model exposing (init)
 import Types exposing (..)
 import Update exposing (update)
@@ -30,4 +31,8 @@ port messageList : Signal Messagelist
 
 incomingActions : Signal Action
 incomingActions =
-  Signal.map SetMessages messageList
+  Signal.map InitializeMessages messageList
+
+
+port newMessage : Signal Chatmessage
+port newMessage = mailBox.signal
