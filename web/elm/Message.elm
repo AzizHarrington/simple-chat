@@ -3,7 +3,7 @@ module Message where
 import Types exposing (..)
 
 
-new : Model -> Chatmessage
+new : Model -> ChatMessage
 new model =
   { time = "12:00"
   , name = model.name
@@ -13,6 +13,6 @@ new model =
 
 -- MAILBOX
 
-mailBox : Signal.Mailbox Chatmessage
+mailBox : Signal.Mailbox ChatMessage
 mailBox =
   Signal.mailbox { name = "", time = "", text = ""}

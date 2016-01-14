@@ -9,18 +9,18 @@ type alias Model =
 
 
 type alias Messagelist =
-  List Chatmessage
+  List ChatMessage
 
 
-type alias Chatmessage =
+type alias ChatMessage =
   { name : String
   , text : String
   , time : String }
 
 
 type Action =
-  InitializeMessages (List Chatmessage)
-  -- | AddMessage
+  InitializeMessages (List ChatMessage)
+  | AddMessage ChatMessage
   | SubmitMessage
   | SetName String
   | SetText String

@@ -46,7 +46,7 @@ messageBoxStyle =
   , ("background", "#F8F8F8")
   ]
 
-formatMessage : Chatmessage -> Html
+formatMessage : ChatMessage -> Html
 formatMessage m =
   div
   [ style [ ("padding", "5px")]]

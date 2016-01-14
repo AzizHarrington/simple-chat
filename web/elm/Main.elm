@@ -26,7 +26,7 @@ app =
     { init = init
     , update = update
     , view = view
-    , inputs = [incomingActions]
+    , inputs = [initMessages, incomingMessage]
     }
 
 
@@ -35,11 +35,19 @@ app =
 port messageList : Signal Messagelist
 
 
-incomingActions : Signal Action
-incomingActions =
+initMessages : Signal Action
+initMessages =
   Signal.map InitializeMessages messageList
 
 
-port chatOutput : Signal Chatmessage
+port chatOutput : Signal ChatMessage
 port chatOutput =
   mailBox.signal
+
+
+port newMessage : Signal ChatMessage
+
+
+incomingMessage : Signal Action
+incomingMessage =
+  Signal.map AddMessage newMessage

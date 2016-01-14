@@ -23,9 +23,26 @@ defmodule SimpleChat.MessageChannel do
     {:noreply, socket}
   end
 
+  def handle_in("new_message", %{"body" => message}, socket) do
+    new_message = %SimpleChat.Message{
+      user_name: message["name"],
+      text: message["text"]
+    }
+    Repo.insert! new_message
+    send self, :send_message
+    {:noreply, socket}
+  end
+
   def handle_info(:after_join, socket) do
-    messages = (from s in SimpleChat.Message) |> Repo.all
+    messages = (from m in SimpleChat.Message) |> Repo.all
     push socket, "set_messages", %{messages: messages}
+    {:noreply, socket}
+  end
+
+  def handle_info(:send_message, socket) do
+    message = (from m in SimpleChat.Message,
+               order_by: [desc: m.id], limit: 1) |> Repo.one
+    broadcast socket, "new_message", %{message: message}
     {:noreply, socket}
   end
 

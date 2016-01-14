@@ -13,6 +13,8 @@ update action model =
   case action of
     InitializeMessages savedMessages ->
       ({ model | messages = savedMessages}, Effects.none)
+    AddMessage newMessage ->
+      ({ model | messages = model.messages ++ [newMessage]}, Effects.none)
     SubmitMessage ->
       ({ model | name = "", text = ""}
       , sendMessage model)

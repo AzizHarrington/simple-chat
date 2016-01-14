@@ -21,7 +21,7 @@ import "deps/phoenix_html/web/static/js/phoenix_html"
 import socket from "./socket"
 
 var elmDiv = document.getElementById("elm-main")
-  , initialState = {messageList: []}
+  , initialState = {messageList: [], newMessage: {name: "", time: "", text: ""}}
   , elmApp = Elm.embed(Elm.Main, elmDiv, initialState)
 
 // Now that you are connected, you can join channels with a topic:
@@ -36,6 +36,12 @@ channel.on('set_messages', data => {
   elmApp.ports.messageList.send(data.messages)
 })
 
-elmApp.ports.chatOutput.subscribe(event => {
-  console.log(event)
+elmApp.ports.chatOutput.subscribe(message => {
+  console.log(message)
+  channel.push("new_message", {body: message})
+})
+
+channel.on('new_message', data => {
+  console.log('got new message', data.message)
+  elmApp.ports.newMessage.send(data.message)
 })
