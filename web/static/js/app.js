@@ -27,6 +27,9 @@ var elmDiv = document.getElementById("elm-main")
 // Now that you are connected, you can join channels with a topic:
 let channel = socket.channel("messages:general", {})
 
+
+// Phoenix channels
+
 channel.join()
   .receive("ok", resp => { console.log("Joined successfully", resp) })
   .receive("error", resp => { console.log("Unable to join", resp) })
@@ -36,12 +39,25 @@ channel.on('set_messages', data => {
   elmApp.ports.messageList.send(data.messages)
 })
 
+channel.on('new_message', data => {
+  console.log('got new message', data.message)
+  elmApp.ports.newMessage.send(data.message)
+})
+
+// Elm ports
+
 elmApp.ports.chatOutput.subscribe(message => {
   console.log(message)
   channel.push("new_message", {body: message})
 })
 
-channel.on('new_message', data => {
-  console.log('got new message', data.message)
-  elmApp.ports.newMessage.send(data.message)
+elmApp.ports.updateMessages.subscribe(event => {
+  console.log(event)
+  setTimeout(scrollBottom, 100)
 })
+
+function scrollBottom () {
+  var chatBox = document.getElementById('chat-box')
+  chatBox.scrollTop = chatBox.scrollHeight
+  console.log("height reset")
+}

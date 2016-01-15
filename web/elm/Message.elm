@@ -13,6 +13,11 @@ new model =
 
 -- MAILBOX
 
-mailBox : Signal.Mailbox ChatMessage
-mailBox =
+messageMailBox : Signal.Mailbox ChatMessage
+messageMailBox =
   Signal.mailbox { name = "", time = "", text = ""}
+
+
+updateMailBox : Signal.Mailbox String
+updateMailBox =
+  Signal.mailbox ""

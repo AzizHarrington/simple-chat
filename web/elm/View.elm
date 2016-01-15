@@ -6,7 +6,6 @@ import Html.Events exposing (..)
 import Json.Decode as Json
 import Signal exposing (..)
 
-import Message exposing (mailBox)
 import Types exposing (..)
 
 
@@ -32,7 +31,9 @@ headLine =
 messageBox : Model -> List Html
 messageBox model =
   [ div
-    [ style messageBoxStyle ]
+    [ style messageBoxStyle
+    , id "chat-box"
+    ]
     (List.map formatMessage model.messages)
   ]
 
