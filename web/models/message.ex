@@ -26,7 +26,14 @@ defmodule SimpleChat.Message do
     def encode(model, opts) do
       %{name: model.user_name,
         text: model.text,
-        time: model.inserted_at} |> Poison.Encoder.encode(opts)
+        time: formatted_time(model.inserted_at)}
+      |> Poison.Encoder.encode(opts)
+    end
+
+    defp formatted_time(date) do
+      {:ok, date} = Ecto.DateTime.dump(date)
+      Timex.Date.from(date)
+      |> Timex.DateFormat.format!( "%B %e, %Y", :strftime)
     end
   end
 end

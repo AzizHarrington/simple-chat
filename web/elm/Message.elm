@@ -5,7 +5,7 @@ import Types exposing (..)
 
 new : Model -> ChatMessage
 new model =
-  { time = "12:00"
+  { time = ""
   , name = model.name
   , text = model.text
   }
