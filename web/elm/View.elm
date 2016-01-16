@@ -42,7 +42,7 @@ messageBoxStyle : List ( String, String )
 messageBoxStyle =
   [ ("overflow-y", "hidden")
   , ("overflow", "scroll")
-  , ("height", "500px")
+  , ("max-height", "700px")
   , ("border", "1px solid grey")
   , ("background", "#F8F8F8")
   ]

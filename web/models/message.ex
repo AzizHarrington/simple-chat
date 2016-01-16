@@ -33,7 +33,8 @@ defmodule SimpleChat.Message do
     defp formatted_time(date) do
       {:ok, date} = Ecto.DateTime.dump(date)
       Timex.Date.from(date)
-      |> Timex.DateFormat.format!( "%B %e, %Y", :strftime)
+      |> Timex.Date.local
+      |> Timex.DateFormat.format!( "%I:%M %p", :strftime )
     end
   end
 end

@@ -19,7 +19,7 @@ defmodule SimpleChat.Mixfile do
   def application do
     [mod: {SimpleChat, []},
      applications: [:phoenix, :phoenix_html, :cowboy, :logger, :gettext,
-                    :phoenix_ecto, :postgrex]]
+                    :phoenix_ecto, :postgrex, :tzdata]]
   end
 
   # Specifies which paths to compile per environment.
@@ -38,7 +38,8 @@ defmodule SimpleChat.Mixfile do
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:gettext, "~> 0.9"},
       {:cowboy, "~> 1.0"},
-      {:timex, "~> 1.0"}
+      {:timex, "~> 1.0"},
+      {:tzdata, "~> 0.5"}
     ]
   end
 
